@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>WebAR - YouTube Icons</title>
+  <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.4.0/dist/aframe-master.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
+  
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #videoModal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    #videoContainer {
+      position: relative;
+      width: 90%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+    }
+    #videoContainer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    #closeBtn {
+      position: absolute;
+      top: -40px;
+      right: 0;
+      background: white;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    #loading {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 20px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <p>Loading AR Experience...</p>
+    <p style="font-size: 14px;">Point camera at target image</p>
+  </div>
+
+  <div id="videoModal">
+    <div id="videoContainer">
+      <button id="closeBtn">Close ✕</button>
+      <iframe id="videoFrame" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+
+  <a-scene
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true; precision: medium;"
+    embedded
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+    
+    <a-assets>
+      <img id="icon" src="icon.jpg" crossorigin="anonymous">
+    </a-assets>
+
+    <!-- NFT Marker - Icons will be generated dynamically from iconConfig -->
+    <a-nft
+      id="nftMarker"
+      type="nft"
+      url="target-image"
+      smooth="true"
+      smoothCount="10"
+      smoothTolerance=".01"
+      smoothThreshold="5">
+      <!-- Icons will be added here dynamically -->
+    </a-nft>
+
+    <a-entity camera></a-entity>
+  </a-scene>
+
+  <script>
+    // ========================================
+    // CONFIGURATION SECTION - EDIT HERE
+    // ========================================
+    
+    // Icon positions (x, y, z) and their YouTube video IDs
+    // All icons on same z-plane (0.3 = slightly in front of target image)
+    const iconConfig = [
+      { x: .09, y: 0.24, z: 0.3, videoId: 'QLM2qgZ1Yig' },        // Icon 1 - Top left blue icon
+      { x: 0.17, y: 0.45, z: 0.3, videoId: 'Lm82r92sHjk' },      // Icon 2 - Blue icon on whale's head - blowhole area
+      { x: 0.46, y: 0.21, z: 0.3, videoId: 'vC_h_Q2axM4' },      // Icon 3 - Top center blue icon
+      { x: 0.82, y: 0.24, z: 0.3, videoId: 'nEWyuQNMlMc' },      // Icon 4 - Top right blue icon
+      { x: 0.03, y: 0.54, z: 0.3, videoId: 'BxIMv0M2Mds' },     // Icon 5 - Left side blue icon
+      { x: 0.12, y: 0.73, z: 0.3, videoId: 'I63WwUBRNVI' },     // Icon 6 - Blue icon on whale's bod
+      { x: 0.37, y: 0.81, z: 0.3, videoId: 'ZfsQ4Skgpnk' },     // Icon 7 -  Bottom center blue icon
+      { x: 0.64, y: 0.81, z: 0.3, videoId: 'dJvVIWgttWY' },      // Icon 8 - Bottom right blue icon
+      { x: 0.87, y: 0.55, z: 0.3, videoId: 'tlR-D5JaKZA' },     // Icon 9 - Right side blue icon
+      { x: 0.83, y: 0.73, z: 0.3, videoId: 'CNHqK2O2CAc' },      // Icon 10 - Lower right blue icon
+      { x: 0.64, y: 0.55, z: 0.3, videoId: 'zvFmW7rb7HM' },     // Icon 11 -Center blue icon on whale's body
+      { x: 0.34, y: 0.55, z: 0.3, videoId: 'ZVdksGUJfVA' }         // Icon 12 - Additional blue icon on whale's back
+    ];
+    
+    // Icon size (width and height)
+    const iconSize = { width: 0.3, height: 0.3 };
+    
+    // ========================================
+    // END CONFIGURATION SECTION
+    // ========================================
+
+    // Wait for scene to load
+    document.querySelector('a-scene').addEventListener('loaded', function() {
+      const nftMarker = document.getElementById('nftMarker');
+      
+      // Create icons dynamically from configuration
+      iconConfig.forEach((config, index) => {
+        const icon = document.createElement('a-plane');
+        icon.setAttribute('class', 'clickable');
+        icon.setAttribute('src', '#icon');
+        icon.setAttribute('position', `${config.x} ${config.y} ${config.z}`);
+        icon.setAttribute('rotation', '-90 0 0');
+        icon.setAttribute('width', iconSize.width);
+        icon.setAttribute('height', iconSize.height);
+        icon.setAttribute('material', 'transparent: true');
+        icon.setAttribute('data-video-id', config.videoId);
+        
+        // Add click event listener
+        icon.addEventListener('click', function(e) {
+          const videoId = this.getAttribute('data-video-id');
+          openVideo(videoId);
+        });
+        
+        // Add to marker
+        nftMarker.appendChild(icon);
+      });
+
+      // Hide loading message when AR is ready
+      setTimeout(() => {
+        document.getElementById('loading').style.display = 'none';
+      }, 2000);
+    });
+
+    // Video modal functions
+    function openVideo(videoId) {
+      const modal = document.getElementById('videoModal');
+      const iframe = document.getElementById('videoFrame');
+      
+      iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      modal.style.display = 'flex';
+    }
+
+    function closeVideo() {
+      const modal = document.getElementById('videoModal');
+      const iframe = document.getElementById('videoFrame');
+      
+      iframe.src = '';
+      modal.style.display = 'none';
+    }
+
+    // Close button handler
+    document.getElementById('closeBtn').addEventListener('click', closeVideo);
+    
+    // Close modal when clicking outside video
+    document.getElementById('videoModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeVideo();
+      }
+    });
+
+    // Track marker detection
+    document.querySelector('a-nft').addEventListener('markerFound', function() {
+      console.log('Marker found!');
+    });
+
+    document.querySelector('a-nft').addEventListener('markerLost', function() {
+      console.log('Marker lost');
+    });
+  </script>
+</body>
+</html>
