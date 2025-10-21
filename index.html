@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>WebAR - YouTube Icons</title>
+  <title>WebAR Test - YouTube Icons</title>
   <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.4.0/dist/aframe-master.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
   
   <style>
     body { margin: 0; overflow: hidden; }
@@ -44,23 +44,36 @@
       cursor: pointer;
       border-radius: 5px;
     }
-    #loading {
+    #instructions {
       position: fixed;
-      top: 50%;
+      top: 20px;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       color: white;
-      font-size: 20px;
+      font-size: 16px;
       font-family: Arial, sans-serif;
       text-align: center;
       z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 15px 25px;
+      border-radius: 10px;
+      max-width: 90%;
+    }
+    #downloadLink {
+      color: #4CAF50;
+      text-decoration: underline;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
-  <div id="loading">
-    <p>Loading AR Experience...</p>
-    <p style="font-size: 14px;">Point camera at target image</p>
+  <div id="instructions">
+    <p><strong>📸 Point camera at HIRO marker</strong></p>
+    <p style="font-size: 14px;">Download marker here: <br>
+    <a id="downloadLink" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">
+      Click to Download HIRO Marker
+    </a></p>
+    <p style="font-size: 12px; margin-top: 10px;">Print it or display on another screen</p>
   </div>
 
   <div id="videoModal">
@@ -74,23 +87,22 @@
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; precision: medium;"
     embedded
-    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
     
     <a-assets>
       <img id="icon" src="icon.jpg" crossorigin="anonymous">
     </a-assets>
 
-    <!-- NFT Marker - Icons will be generated dynamically from iconConfig -->
-    <a-nft
-      id="nftMarker"
-      type="nft"
-      url="target-image"
+    <!-- Using built-in HIRO marker for testing -->
+    <a-marker 
+      id="hiroMarker"
+      preset="hiro"
       smooth="true"
       smoothCount="10"
-      smoothTolerance=".01"
+      smoothTolerance="0.01"
       smoothThreshold="5">
       <!-- Icons will be added here dynamically -->
-    </a-nft>
+    </a-marker>
 
     <a-entity camera></a-entity>
   </a-scene>
@@ -101,20 +113,20 @@
     // ========================================
     
     // Icon positions (x, y, z) and their YouTube video IDs
-    // All icons on same z-plane (0.3 = slightly in front of target image)
+    // All icons on same z-plane (0.3 = slightly in front of target)
     const iconConfig = [
-      { x: .09, y: 0.24, z: 0.3, videoId: 'QLM2qgZ1Yig' },        // Icon 1 - Top left blue icon
-      { x: 0.17, y: 0.45, z: 0.3, videoId: 'Lm82r92sHjk' },      // Icon 2 - Blue icon on whale's head - blowhole area
-      { x: 0.46, y: 0.21, z: 0.3, videoId: 'vC_h_Q2axM4' },      // Icon 3 - Top center blue icon
-      { x: 0.82, y: 0.24, z: 0.3, videoId: 'nEWyuQNMlMc' },      // Icon 4 - Top right blue icon
-      { x: 0.03, y: 0.54, z: 0.3, videoId: 'BxIMv0M2Mds' },     // Icon 5 - Left side blue icon
-      { x: 0.12, y: 0.73, z: 0.3, videoId: 'I63WwUBRNVI' },     // Icon 6 - Blue icon on whale's bod
-      { x: 0.37, y: 0.81, z: 0.3, videoId: 'ZfsQ4Skgpnk' },     // Icon 7 -  Bottom center blue icon
-      { x: 0.64, y: 0.81, z: 0.3, videoId: 'dJvVIWgttWY' },      // Icon 8 - Bottom right blue icon
-      { x: 0.87, y: 0.55, z: 0.3, videoId: 'tlR-D5JaKZA' },     // Icon 9 - Right side blue icon
-      { x: 0.83, y: 0.73, z: 0.3, videoId: 'CNHqK2O2CAc' },      // Icon 10 - Lower right blue icon
-      { x: 0.64, y: 0.55, z: 0.3, videoId: 'zvFmW7rb7HM' },     // Icon 11 -Center blue icon on whale's body
-      { x: 0.34, y: 0.55, z: 0.3, videoId: 'ZVdksGUJfVA' }         // Icon 12 - Additional blue icon on whale's back
+      { x: 0, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },        // Icon 1 - Center
+      { x: 0.4, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 2 - Right
+      { x: 0.6, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 3 - Far Right
+      { x: 0.8, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 4 - Very Far Right
+      { x: -0.4, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },     // Icon 5 - Left
+      { x: -0.6, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },     // Icon 6 - Far Left
+      { x: -0.8, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },     // Icon 7 - Very Far Left
+      { x: 0.2, y: 0.7, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 8 - Upper Right
+      { x: -0.2, y: 0.7, z: 0.3, videoId: 'dQw4w9WgXcQ' },     // Icon 9 - Upper Left
+      { x: 0.2, y: 0.3, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 10 - Lower Right
+      { x: -0.2, y: 0.3, z: 0.3, videoId: 'dQw4w9WgXcQ' },     // Icon 11 - Lower Left
+      { x: 0, y: 0.8, z: 0.3, videoId: 'dQw4w9WgXcQ' }         // Icon 12 - Top Center
     ];
     
     // Icon size (width and height)
@@ -126,7 +138,7 @@
 
     // Wait for scene to load
     document.querySelector('a-scene').addEventListener('loaded', function() {
-      const nftMarker = document.getElementById('nftMarker');
+      const marker = document.getElementById('hiroMarker');
       
       // Create icons dynamically from configuration
       iconConfig.forEach((config, index) => {
@@ -137,7 +149,7 @@
         icon.setAttribute('rotation', '-90 0 0');
         icon.setAttribute('width', iconSize.width);
         icon.setAttribute('height', iconSize.height);
-        icon.setAttribute('material', 'transparent: true');
+        icon.setAttribute('material', 'transparent: true; opacity: 0.9');
         icon.setAttribute('data-video-id', config.videoId);
         
         // Add click event listener
@@ -147,13 +159,15 @@
         });
         
         // Add to marker
-        nftMarker.appendChild(icon);
+        marker.appendChild(icon);
       });
 
-      // Hide loading message when AR is ready
+      // Hide instructions after 5 seconds
       setTimeout(() => {
-        document.getElementById('loading').style.display = 'none';
-      }, 2000);
+        const instructions = document.getElementById('instructions');
+        instructions.style.opacity = '0.3';
+        instructions.style.fontSize = '12px';
+      }, 5000);
     });
 
     // Video modal functions
@@ -183,13 +197,15 @@
       }
     });
 
-    // Track marker detection
-    document.querySelector('a-nft').addEventListener('markerFound', function() {
-      console.log('Marker found!');
+    // Track marker detection for debugging
+    document.getElementById('hiroMarker').addEventListener('markerFound', function() {
+      console.log('✅ Marker detected!');
+      document.getElementById('instructions').innerHTML = '<p><strong>✅ Marker Found!</strong></p><p style="font-size: 14px;">Click icons to play videos</p>';
     });
 
-    document.querySelector('a-nft').addEventListener('markerLost', function() {
-      console.log('Marker lost');
+    document.getElementById('hiroMarker').addEventListener('markerLost', function() {
+      console.log('❌ Marker lost');
+      document.getElementById('instructions').innerHTML = '<p><strong>📸 Point camera at HIRO marker</strong></p>';
     });
   </script>
 </body>
