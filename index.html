@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>WebAR Test - YouTube Icons</title>
+  <title>WebAR - YouTube Icons</title>
   <script src="https://cdn.jsdelivr.net/gh/aframevr/aframe@1.4.0/dist/aframe-master.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.5/aframe/build/aframe-ar-nft.js"></script>
   
   <style>
     body { margin: 0; overflow: hidden; }
@@ -44,37 +44,43 @@
       cursor: pointer;
       border-radius: 5px;
     }
-    #instructions {
+    #loading {
       position: fixed;
-      top: 20px;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       color: white;
-      font-size: 16px;
+      font-size: 20px;
       font-family: Arial, sans-serif;
       text-align: center;
       z-index: 100;
       background: rgba(0, 0, 0, 0.7);
-      padding: 15px 25px;
+      padding: 20px 30px;
       border-radius: 10px;
-      max-width: 90%;
     }
-    #downloadLink {
-      color: #4CAF50;
-      text-decoration: underline;
-      font-weight: bold;
+    #markerStatus {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 14px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 20px;
+      border-radius: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="instructions">
-    <p><strong>📸 Point camera at HIRO marker</strong></p>
-    <p style="font-size: 14px;">Download marker here: <br>
-    <a id="downloadLink" href="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" target="_blank">
-      Click to Download HIRO Marker
-    </a></p>
-    <p style="font-size: 12px; margin-top: 10px;">Print it or display on another screen</p>
+  <div id="loading">
+    <p>🔍 Loading AR Experience...</p>
+    <p style="font-size: 14px;">Point camera at your whale image</p>
   </div>
+
+  <div id="markerStatus">Searching for marker...</div>
 
   <div id="videoModal">
     <div id="videoContainer">
@@ -87,22 +93,23 @@
     vr-mode-ui="enabled: false"
     renderer="logarithmicDepthBuffer: true; precision: medium;"
     embedded
-    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false;">
+    arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;">
     
     <a-assets>
       <img id="icon" src="icon.jpg" crossorigin="anonymous">
     </a-assets>
 
-    <!-- Using built-in HIRO marker for testing -->
-    <a-marker 
-      id="hiroMarker"
-      preset="hiro"
+    <!-- NFT Marker - Icons will be generated dynamically from iconConfig -->
+    <a-nft
+      id="nftMarker"
+      type="nft"
+      url="target-image"
       smooth="true"
       smoothCount="10"
-      smoothTolerance="0.01"
+      smoothTolerance=".01"
       smoothThreshold="5">
       <!-- Icons will be added here dynamically -->
-    </a-marker>
+    </a-nft>
 
     <a-entity camera></a-entity>
   </a-scene>
@@ -113,7 +120,7 @@
     // ========================================
     
     // Icon positions (x, y, z) and their YouTube video IDs
-    // All icons on same z-plane (0.3 = slightly in front of target)
+    // All icons on same z-plane (0.3 = slightly in front of target image)
     const iconConfig = [
       { x: 0, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },        // Icon 1 - Center
       { x: 0.4, y: 0.5, z: 0.3, videoId: 'dQw4w9WgXcQ' },      // Icon 2 - Right
@@ -138,7 +145,7 @@
 
     // Wait for scene to load
     document.querySelector('a-scene').addEventListener('loaded', function() {
-      const marker = document.getElementById('hiroMarker');
+      const nftMarker = document.getElementById('nftMarker');
       
       // Create icons dynamically from configuration
       iconConfig.forEach((config, index) => {
@@ -149,7 +156,7 @@
         icon.setAttribute('rotation', '-90 0 0');
         icon.setAttribute('width', iconSize.width);
         icon.setAttribute('height', iconSize.height);
-        icon.setAttribute('material', 'transparent: true; opacity: 0.9');
+        icon.setAttribute('material', 'transparent: true');
         icon.setAttribute('data-video-id', config.videoId);
         
         // Add click event listener
@@ -159,15 +166,13 @@
         });
         
         // Add to marker
-        marker.appendChild(icon);
+        nftMarker.appendChild(icon);
       });
 
-      // Hide instructions after 5 seconds
+      // Hide loading message when AR is ready
       setTimeout(() => {
-        const instructions = document.getElementById('instructions');
-        instructions.style.opacity = '0.3';
-        instructions.style.fontSize = '12px';
-      }, 5000);
+        document.getElementById('loading').style.display = 'none';
+      }, 3000);
     });
 
     // Video modal functions
@@ -197,15 +202,17 @@
       }
     });
 
-    // Track marker detection for debugging
-    document.getElementById('hiroMarker').addEventListener('markerFound', function() {
-      console.log('✅ Marker detected!');
-      document.getElementById('instructions').innerHTML = '<p><strong>✅ Marker Found!</strong></p><p style="font-size: 14px;">Click icons to play videos</p>';
+    // Track marker detection
+    document.querySelector('a-nft').addEventListener('markerFound', function() {
+      console.log('✅ Whale marker found!');
+      document.getElementById('markerStatus').innerHTML = '✅ Marker Found! Click icons to play videos';
+      document.getElementById('markerStatus').style.background = 'rgba(76, 175, 80, 0.8)';
     });
 
-    document.getElementById('hiroMarker').addEventListener('markerLost', function() {
+    document.querySelector('a-nft').addEventListener('markerLost', function() {
       console.log('❌ Marker lost');
-      document.getElementById('instructions').innerHTML = '<p><strong>📸 Point camera at HIRO marker</strong></p>';
+      document.getElementById('markerStatus').innerHTML = '🔍 Point camera at whale image';
+      document.getElementById('markerStatus').style.background = 'rgba(0, 0, 0, 0.7)';
     });
   </script>
 </body>
